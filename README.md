@@ -123,6 +123,55 @@ kube-system   coredns          2/2     2            2           1m
 kube-system   metrics-server   1/1     1            1           1m
 ```
 
+### Installing Flux
+
+[Flux][flux] is a set of continuous and progressive delivery solutions for
+Kubernetes designed to keep clusters in sync one ore more sources of
+configuration. In this case, Flux is used to adopt the [GitOps][gitops] approach
+for managing all applications running in the cluster.
+
+First, [install the Flux command-line tool][flux-install] on a local machine.
+This will be used to install and configure Flux.
+
+Then use the `flux bootstrap github` command to deploiy the Flux controllers in
+the Kubernetes cluster and configures those controllers to sync the cluster
+state from this GitHub repository.
+
+> Note: This requires a [GitHub personal access token][github-pat] (PAT) which
+> for use with the GitHub API.
+
+```shell
+export GITHUB_USER=tantalic
+export GITHUB_TOKEN=<redacted>
+export GITHUB_REPO=shaving-yaks
+
+flux bootstrap github \
+  --kubeconfig ./shaving-yaks.kubeconfig \
+  --token-auth \
+  --owner=$GITHUB_USER \
+  --repository=$GITHUB_REPO \
+  --branch=main \
+  --path=kubernetes/cluster \
+  --personal
+```
+
+![Demo](kubernetes/demo/flux-bootstrap.cast.gif)
+
+To verify Flux is watching the Git repository for changes, use the `kubectl log`
+commands on the `source-controller` deployment:
+
+```shell
+kubectl logs deployment/source-controller --namespace flux-system --kubeconfig ./shaving-yaks.kubeconfig --tail 1
+```
+
+```json
+{"level":"info","ts":"2023-12-27T08:18:38.317Z","msg":"no changes since last reconcilation: observed revision 'main@sha1:b7c5a953620aa4a55ac5592ff78f551edbabf47c'","controller":"gitrepository","controllerGroup":"source.toolkit.fluxcd.io","controllerKind":"GitRepository","GitRepository":{"name":"flux-system","namespace":"flux-system"},"namespace":"flux-system","name":"flux-system","reconcileID":"72871145-39c8-4bae-9413-e270726ab853"}
+```
+
+With Flux installed and connected to this Git repository, any operation on the
+cluster (even upgrading Flux) can be done via Git push, rather than
+through the Kubernetes API.
+
 <!-- References -->
 
 [turing-pi]: https://turingpi.com/product/turing-pi-2/
@@ -135,3 +184,7 @@ kube-system   metrics-server   1/1     1            1           1m
 [k0sctl]: https://github.com/k0sproject/k0sctl
 [k0s-config]: k0s/cluster.yaml
 [k0sctl-install]: https://github.com/k0sproject/k0sctl#installation
+[flux]: https://fluxcd.io
+[gitops]: https://www.weave.works/technologies/gitops/
+[flux-install]: https://fluxcd.io/flux/installation/#install-the-flux-cli
+[github-pat]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
