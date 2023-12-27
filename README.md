@@ -170,7 +170,8 @@ kubectl logs deployment/source-controller --namespace flux-system --kubeconfig .
 
 With Flux installed and connected to this Git repository, any operation on the
 cluster (even upgrading Flux) can be done via Git push, rather than
-through the Kubernetes API.
+through the Kubernetes API. The definitions for the flux components can be
+found in [`kubernetes/cluster/flux-system`](./kubernetes/cluster/flux-system).
 
 <!-- References -->
 
