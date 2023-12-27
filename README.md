@@ -57,6 +57,72 @@ directory in this repository, using the following steps:
 6. Reboot the node `sudo reboot` and verify hostname and network configuration
    is working
 
+## Kubernetes
+
+The Kubernetes cluster is configured to have one node as the controller and the
+remaining nodes as workers.
+
+| Node | Hostname  | Cluster Role |
+| ---- | --------- | ------------ |
+| 1    | `yak-001` | controller   |
+| 2    | `yak-002` | worker       |
+| 3    | `yak-003` | worker       |
+| 4    | `yak-004` | worker       |
+
+### Kubernetes Installation
+
+The cluster runs [k0s][k0s], which is an all-inclusive Kubernetes distribution
+that still manages to be low friction for installation and management.
+
+The Kubernetes setup is done via [`k0sctl`][k0sctl], a command-line tool for
+bootstrapping and managing k0s clusters. Before proceeding,
+[install `k0sctl`][k0sctl-install] on your local workstation.
+
+`k0sctl` works from a configuration
+file, [`k0s/cluster.yaml`][k0s-config], which describes the desired cluster and
+connects to each host over SSH to configure as needed. The Kubernetes
+installation is done via a single command which only takes ~2 minutes to
+complete:
+
+```shell
+k0sctl apply --config k0s/cluster.yaml
+```
+
+![Demo](./k0s/demo/cluster-init.cast.gif)
+
+Once the k0s cluster has been installed, the `k0sctl kubeconfig` command is used
+to get a kubeconfig file that can be used to connect to the cluster with tools
+such as `kubectl`.
+
+```shell
+k0sctl kubeconfig --config k0s/cluster.yaml > shaving-yaks.kubeconfig
+```
+
+Once this is completed, youc an connect to the cluster with most command-line
+tools by passing the `--kubeconfig` flag. For example, the `kubectl` command can
+now be used to verify the cluster is running:
+
+```shell
+kubectl get nodes --kubeconfig shaving-yaks.kubeconfig
+```
+
+```
+NAME      STATUS   ROLES    AGE   VERSION
+yak-002   Ready    <none>   1m    v1.28.4+k0s
+yak-003   Ready    <none>   1m    v1.28.4+k0s
+yak-004   Ready    <none>   1m    v1.28.4+k0s
+```
+
+```shell
+get deployments --all-namespaces  --kubeconfig shaving-yaks.kubeconfig
+```
+
+```
+NAMESPACE     NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+kube-system   coredns          2/2     2            2           1m
+kube-system   metrics-server   1/1     1            1           1m
+```
+
 <!-- References -->
 
 [turing-pi]: https://turingpi.com/product/turing-pi-2/
@@ -65,3 +131,7 @@ directory in this repository, using the following steps:
 [cm4008032]: https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4008032
 [jammy-jellyfish]: https://www.releases.ubuntu.com/22.04/
 [turing-pi-bmc]: https://docs.turingpi.com/docs/turing-pi2-bmc-intro-specs
+[k0s]: https://k0sproject.io
+[k0sctl]: https://github.com/k0sproject/k0sctl
+[k0s-config]: k0s/cluster.yaml
+[k0sctl-install]: https://github.com/k0sproject/k0sctl#installation
