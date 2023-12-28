@@ -173,6 +173,81 @@ cluster (even upgrading Flux) can be done via Git push, rather than
 through the Kubernetes API. The definitions for the flux components can be
 found in [`kubernetes/cluster/flux-system`](./kubernetes/cluster/flux-system).
 
+### Sealed Secrets
+
+[Sealed Secrets][sealed-secrets] provides a GitOps-friendly mechanisn for secure
+Kubernetes Secret Management. Instead of directly creating
+[Kubernetes Secrets][k8s-secret], Sealed Secrets objects are created, stored in
+this Git repository and commited to the Repository via Flux. The Sealed Secrets
+controller then automatically decrypts all Sealed Secrets into the equivalent
+native Kubernetes Secret for use within the cluster.
+
+Because the encryption key is generated and stored in the cluster, Sealed
+Secrets are safe to store in local code repositories, along with the rest of
+Kubernetes objects.
+
+#### Installing Sealed Secrets in Kubernetes
+
+Sealed Secrets is installed via it's Helm chart. The specific configuration
+can be found in `cluster/sealed-secrets/sealed-secrets-components.yaml`. The
+objects were initially generated with the following `flux create` commands:
+
+```bash
+flux create source helm sealed-secrets \
+    --url https://bitnami-labs.github.io/sealed-secrets \
+    --namespace=sealed-secrets \
+    --export
+```
+
+```bash
+flux create helmrelease sealed-secrets \
+    --interval=1h \
+    --release-name=sealed-secrets-controller \
+    --target-namespace=sealed-secrets \
+    --source=HelmRepository/sealed-secrets \
+    --chart=sealed-secrets \
+    --chart-version="2.14.1" \
+    --crds=CreateReplace \
+    --export
+```
+
+#### Installing `kubeseal`
+
+To generate and work with Kube Seal locally, [install the `kubeseal`][kubeseal-install]
+command-line tool.
+
+#### Getting the Public Certificate
+
+After Flux completes the installation, the public certificate that can be used
+to encrypt credentials can be fetched from the cluster with the following
+command:
+
+```bash
+kubeseal --fetch-cert \
+    --kubeconfig ././shaving-yaks.kubeconfig \
+    --controller-name=sealed-secrets-controller \
+    --controller-namespace=sealed-secrets \
+    > sealed-secrets-pub.pem
+```
+
+#### Creating a Sealed Secret
+
+To create a Sealed Secret, you will first need a local secret in YAML format. As
+an example a simple secreat can be created with:
+
+```bash
+echo -n "some secret value" | kubectl create secret generic test-secret --dry-run=client --from-file=foo=/dev/stdin -o yaml > test-secret.yaml
+```
+
+The `kubeseal` command can then be used to convert this to a Sealed Secret:
+
+```bash
+kubeseal \
+    --cert sealed-secrets-pub.pem \
+    --secret-file test-secret.yaml \
+    --sealed-secret-file test-secret.yaml
+```
+
 <!-- References -->
 
 [turing-pi]: https://turingpi.com/product/turing-pi-2/
@@ -189,3 +264,6 @@ found in [`kubernetes/cluster/flux-system`](./kubernetes/cluster/flux-system).
 [gitops]: https://www.weave.works/technologies/gitops/
 [flux-install]: https://fluxcd.io/flux/installation/#install-the-flux-cli
 [github-pat]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+[sealed-secrets]: https://github.com/bitnami-labs/sealed-secrets
+[k8s-secret]: https://kubernetes.io/docs/concepts/configuration/secret/
+[kubeseal-install]: https://github.com/bitnami-labs/sealed-secrets#kubeseal
