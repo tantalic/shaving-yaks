@@ -123,7 +123,7 @@ kube-system   coredns          2/2     2            2           1m
 kube-system   metrics-server   1/1     1            1           1m
 ```
 
-### Installing Flux
+### Flux
 
 [Flux][flux] is a set of continuous and progressive delivery solutions for
 Kubernetes designed to keep clusters in sync one ore more sources of
