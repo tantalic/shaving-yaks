@@ -248,6 +248,39 @@ kubeseal \
     --sealed-secret-file test-secret.yaml
 ```
 
+### Tailscale
+
+One of the challenges of a home lab is providing secure and reliable access to
+the applications running when you are not on the network. As I am already a
+(very) happy [Tailscale][tailscale] user, the
+[Tailscale Operator][tailscale-operator] is a natural fit. Specifically this
+allows me to access services within the cluster (via Ingress) and to the
+Kubernetes API from any device connected to my tailnet.
+
+#### Installing Tailscale Operator
+
+Tailscale Operator is installed via it's Helm chart. The specific configuration
+can be found in `kubernetes/cluster/tailscale/tailscale.yaml`. The objects
+were initially generated with the following commands:
+
+Namespace:
+
+```shell
+kubectl create namespace tailscale --dry-run=client -o yaml
+```
+
+Sealed Secret:
+
+```shell
+kubeseal \
+    --cert sealed-secrets-pub.pem \
+    --secret-file kubernetes/cluster/tailscale/secret.yaml \
+    --sealed-secret-file kubernetes/cluster/tailscale/secret.yaml
+```
+
+Note: The original Secret, HelmRepository, HelmRelease were created manually.
+
+
 <!-- References -->
 
 [turing-pi]: https://turingpi.com/product/turing-pi-2/
@@ -267,3 +300,5 @@ kubeseal \
 [sealed-secrets]: https://github.com/bitnami-labs/sealed-secrets
 [k8s-secret]: https://kubernetes.io/docs/concepts/configuration/secret/
 [kubeseal-install]: https://github.com/bitnami-labs/sealed-secrets#kubeseal
+[tailscale]: https://tailscale.com/
+[tailscale-operator]: https://tailscale.com/kb/1236/kubernetes-operator
