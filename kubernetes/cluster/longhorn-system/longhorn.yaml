@@ -32,6 +32,7 @@ spec:
       replicas: 1
     defaultSettings:
       defaultDataPath: /mnt/longhorn-001/
+      defaultReplicaCount: 2
   install:
     crds: Create
   interval: 1h0m0s
