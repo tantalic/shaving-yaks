@@ -1,0 +1,105 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+  namespace: paperless
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: paperless
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: paperless
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: paperless
+data:
+  redis.conf: |
+    bind 0.0.0.0
+    port 6379
+    protected-mode no
+    save 300 1 60 100
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: paperless
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: paperless
+    app.kubernetes.io/version: "7.2.3"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+      app.kubernetes.io/part-of: paperless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/component: broker
+        app.kubernetes.io/part-of: paperless
+        app.kubernetes.io/version: "7.2.3"
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2.3-alpine
+          args: 
+            - /usr/local/etc/redis/redis.conf
+          ports:
+            - containerPort: 6379
+              name: tcp
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/etc/redis/
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: redis-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: redis-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: paperless
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: paperless
+spec:
+  ports:
+    - name: tcp
+      port: 6379
+      targetPort: tcp
+  selector:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of: paperless
+---
+
