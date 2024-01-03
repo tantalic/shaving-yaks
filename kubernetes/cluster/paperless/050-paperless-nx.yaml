@@ -36,10 +36,10 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: paperless-export
+  name: paperless-temp
   namespace: paperless
   labels:
-    app.kubernetes.io/name: paperless-export
+    app.kubernetes.io/name: paperless-temp
     app.kubernetes.io/component: paperless-ngx
     app.kubernetes.io/part-of: paperless
 spec:
@@ -101,9 +101,9 @@ spec:
         - name: consume
           persistentVolumeClaim:
             claimName: paperless-consume
-        - name: export
+        - name: temp
           persistentVolumeClaim:
-            claimName: paperless-export
+            claimName: paperless-temp
       containers:
         - name: paperless-ngx
           image: ghcr.io/paperless-ngx/paperless-ngx:2.2.1
@@ -129,18 +129,26 @@ spec:
               value: https://paperless.shark-butterfly.ts.net,http://localhost:8000
             - name: PAPERLESS_CORS_ALLOWED_HOSTS
               value: https://paperless.shark-butterfly.ts.net,http://localhost:8000
+            - name: PAPERLESS_DATA_DIR
+              value: /usr/paperless/data/
+            - name: PAPERLESS_MEDIA_ROOT
+              value: /usr/paperless/media/
+            - name: PAPERLESS_CONVERT_TMPDIR
+              value: /usr/paperless/temp/convert/
+            - name: PAPERLESS_CONSUMPTION_DIR
+              value: /usr/paperless/consume/
           ports:
             - containerPort: 8000
               name: http
           volumeMounts:
             - name: data
-              mountPath: /usr/src/paperless/data
+              mountPath: /usr/paperless/data
             - name: media
-              mountPath: /usr/src/paperless/media
-            - name: export
-              mountPath: /usr/src/paperless/export
+              mountPath: /usr/paperless/media
             - name: consume
-              mountPath: /usr/src/paperless/consume
+              mountPath: /usr/paperless/consume
+            - name: temp
+              mountPath: /usr/paperless/temp
           resources:
             limits:
               cpu: 1000m
