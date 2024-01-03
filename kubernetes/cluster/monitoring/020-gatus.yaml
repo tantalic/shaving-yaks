@@ -1,0 +1,223 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatus-config
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: status
+    app.kubernetes.io/component: gatus
+    app.kubernetes.io/part-of: status
+data:
+  gatus.yaml: |
+    storage:
+      type: sqlite
+      path: /var/gatus/data/data.db
+    metrics: true
+    ui:
+      title: 🪒 Shaving Yaks Status 🐑
+      description: What is and isn't working in the over-engineered home lab 🏡🧪
+      header: Shaving Yaks Status
+      link: https://github.com/tantalic/shaving-yaks
+    alerting:
+      pushover:
+        title: 🪒 Shaving Yaks Status 🐑
+        sound: siren
+        application-token: "${PUSHOVER_APP_TOKEN}"
+        user-key: "${PUSHOVER_USER_KEY}"
+        default-alert:
+          description: "health check failed"
+          send-on-resolved: true
+          failure-threshold: 3
+          success-threshold: 3
+    endpoints:
+      - name: Paperless NGX
+        group: Paperless
+        url: "http://paperless-ngx.paperless.svc.cluster.local:8000"
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+      - name: Gotenberg
+        group: Paperless
+        url: "http://gotenberg.paperless.svc.cluster.local:3000/health"
+        conditions:
+          - "[STATUS] == 200"
+          - "[BODY].status == up"
+        alerts:
+          - type: pushover
+      - name: Tika
+        group: Paperless
+        url: "http://tika.paperless.svc.cluster.local:9998/tika"
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+      - name: Redis
+        group: Paperless
+        url: "tcp://redis.paperless.svc.cluster.local:6379"
+        interval: 30s
+        conditions:
+          - "[CONNECTED] == true"
+        alerts:
+          - type: pushover
+      - name: ntfy
+        group: Monitoring
+        url: "http://ntfy.ntfy.svc.cluster.local:80"
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+      - name: Grafana
+        group: Monitoring
+        url: "http://grafana.monitoring.svc.cluster.local:3000"
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+      - name: Prometheus Alertmanager
+        group: Monitoring
+        url: "http://alertmanager-main.monitoring.svc.cluster.local:9093"
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+      - name: Prometheus
+        group: Monitoring
+        url: "http://prometheus-k8s.monitoring.svc.cluster.local:9090"
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: status
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: status
+    app.kubernetes.io/component: gatus
+    app.kubernetes.io/part-of: status
+    app.kubernetes.io/version: "5.7.0"
+spec:
+  serviceName: gatus
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: status
+      app.kubernetes.io/component: gatus
+      app.kubernetes.io/part-of: status
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: status
+        app.kubernetes.io/component: gatus
+        app.kubernetes.io/part-of: status
+        app.kubernetes.io/version: "5.7.0"
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: gatus-config
+      containers:
+        - name: gatus
+          image: twinproduction/gatus:v5.7.0
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            failureThreshold: 2
+          env:
+            - name: DEPLOY
+              value: "2"
+            - name: GATUS_CONFIG_PATH
+              value: /var/gatus/config/gatus.yaml
+            - name: PUSHOVER_APP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: pushover-api
+                  key: application-token
+            - name: PUSHOVER_USER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pushover-api
+                  key: user-key
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /var/gatus/config/
+            - name: data
+              mountPath: /var/gatus/data/
+          resources:
+            requests:
+              cpu: 100m
+              memory: 48Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        namespace: monitoring
+        labels:
+          app.kubernetes.io/name: status
+          app.kubernetes.io/component: gatus
+          app.kubernetes.io/part-of: status
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatus
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: status
+    app.kubernetes.io/component: gatus
+    app.kubernetes.io/part-of: status
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: status
+    app.kubernetes.io/component: gatus
+    app.kubernetes.io/part-of: status
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: status
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: status
+    app.kubernetes.io/component: gatus
+    app.kubernetes.io/part-of: status
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - status
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: gatus
+                port:
+                  name: http
+---
+
