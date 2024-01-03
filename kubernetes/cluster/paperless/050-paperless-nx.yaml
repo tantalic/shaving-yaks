@@ -125,6 +125,8 @@ spec:
               value: http://gotenberg:3000
             - name: PAPERLESS_WEBSERVER_WORKERS
               value: "1"
+            - name: PAPERLESS_CONVERT_MEMORY_LIMIT
+              value: "1024"
             - name: PAPERLESS_CSRF_TRUSTED_ORIGINS
               value: https://paperless.shark-butterfly.ts.net,http://localhost:8000
             - name: PAPERLESS_CORS_ALLOWED_HOSTS
@@ -151,8 +153,8 @@ spec:
               mountPath: /usr/paperless/temp
           resources:
             limits:
-              cpu: 1000m
-              memory: 1000Mi
+              cpu: 1500m
+              memory: 1500Mi
             requests:
               cpu: 500m
               memory: 600Mi
