@@ -136,7 +136,7 @@ spec:
             - name: PAPERLESS_MEDIA_ROOT
               value: /usr/paperless/media/
             - name: PAPERLESS_CONVERT_TMPDIR
-              value: /usr/paperless/temp/convert/
+              value: /tmp/paperless/convert/
             - name: PAPERLESS_CONSUMPTION_DIR
               value: /usr/paperless/consume/
           ports:
@@ -150,7 +150,7 @@ spec:
             - name: consume
               mountPath: /usr/paperless/consume
             - name: temp
-              mountPath: /usr/paperless/temp
+              mountPath: /tmp/paperless
           resources:
             limits:
               cpu: 1500m
