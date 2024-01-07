@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: homeassistant-core
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: homeassistant-core
+    app.kubernetes.io/component: core
+    app.kubernetes.io/part-of: homeassistant
+    app.kubernetes.io/version: "2024.1.2"
+spec:
+  serviceName: homeassistant
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: homeassistant-core
+      app.kubernetes.io/component: core
+      app.kubernetes.io/part-of: homeassistant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: homeassistant-core
+        app.kubernetes.io/component: core
+        app.kubernetes.io/part-of: homeassistant
+        app.kubernetes.io/version: "2024.1.2"
+    spec:
+      hostNetwork: true
+      containers:
+        - name: homeassistant-core
+          image: ghcr.io/home-assistant/home-assistant:2024.1.2
+          env:
+            - name: TZ
+              value: "America/Los_Angeles"
+          ports:
+            - name: http
+              containerPort: 8123
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config/
+          resources:
+            requests:
+              cpu: 100m
+              memory: 48Mi
+            limits:
+              cpu: 1000m
+              memory: 1.5Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: config
+        namespace: homeassistant
+        labels:
+          app.kubernetes.io/name: homeassistant-core
+          app.kubernetes.io/component: core
+          app.kubernetes.io/part-of: homeassistant
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homeassistant-core
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: homeassistant-core
+    app.kubernetes.io/component: core
+    app.kubernetes.io/part-of: homeassistant
+  annotations:
+    # Expose to tailscale - Using an Ingress resource was not compatible,
+    # likely due to the use of the host network mode. This makes the service
+    # available at http://homeassistant:8123/
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "homeassistant"
+spec:
+  ports:
+    - name: http
+      port: 8123
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: homeassistant-core
+    app.kubernetes.io/component: core
+    app.kubernetes.io/part-of: homeassistant
+---
