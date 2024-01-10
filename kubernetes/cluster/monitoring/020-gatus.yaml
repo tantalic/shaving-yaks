@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gatus-config-2024-01-06
+  name: gatus-config-2024-01-09
   namespace: monitoring
   labels:
     app.kubernetes.io/name: status
@@ -96,6 +96,22 @@ data:
           - "[STATUS] == 200"
         alerts:
           - type: pushover
+      - name: Jellyfin
+        group: Media Server
+        url: "http://jellyfin.jellyfin.svc.cluster.local:8096/health"
+        conditions:
+          - "[STATUS] == 200"
+          - "[BODY] == Healthy"
+        alerts:
+          - type: pushover
+      - name: File Browser
+        group: Media Server
+        url: "http://jellyfin.jellyfin.svc.cluster.local:8000/health"
+        conditions:
+          - "[STATUS] == 200"
+          - "[BODY].status == OK"
+        alerts:
+          - type: pushover
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -126,7 +142,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: gatus-config-2024-01-06
+            name: gatus-config-2024-01-09
       containers:
         - name: gatus
           image: twinproduction/gatus:v5.7.0
