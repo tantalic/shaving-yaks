@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gatus-config-2024-01-10
+  name: gatus-config-2024-01-16
   namespace: monitoring
   labels:
     app.kubernetes.io/name: status
@@ -91,7 +91,7 @@ data:
           - type: pushover
       - name: OpenSpeedTest
         group: Monitoring
-        url: "http://openspeedtest.monitoring.svc.cluster.local:3000"
+        url: "http://openspeedtest.monitoring.svc.cluster.local:80"
         conditions:
           - "[STATUS] == 200"
         alerts:
@@ -149,7 +149,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: gatus-config-2024-01-10
+            name: gatus-config-2024-01-16
       containers:
         - name: gatus
           image: twinproduction/gatus:v5.7.0

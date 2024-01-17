@@ -32,33 +32,15 @@ kind: Service
 metadata:
   name: openspeedtest
   namespace: monitoring
+  annotations:
+    # Expose to tailscale
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "speedtest"
 spec:
   ports:
     - name: web
-      port: 3000
+      port: 80
       targetPort: 3000
   selector:
     app: openspeedtest
 ---
-kind: Ingress
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: speedtest
-  namespace: monitoring
-spec:
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - speedtest
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: openspeedtest
-                port:
-                  name: web
----
-
