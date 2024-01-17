@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gatus-config-2024-01-16
+  name: gatus-config-2024-01-16b
   namespace: monitoring
   labels:
     app.kubernetes.io/name: status
@@ -105,7 +105,7 @@ data:
           - type: pushover
       - name: Jellyfin
         group: Media Server
-        url: "http://jellyfin.jellyfin.svc.cluster.local:8096/health"
+        url: "http://jellyfin.jellyfin.svc.cluster.local:80/health"
         conditions:
           - "[STATUS] == 200"
           - "[BODY] == Healthy"
@@ -149,7 +149,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: gatus-config-2024-01-16
+            name: gatus-config-2024-01-16b
       containers:
         - name: gatus
           image: twinproduction/gatus:v5.7.0

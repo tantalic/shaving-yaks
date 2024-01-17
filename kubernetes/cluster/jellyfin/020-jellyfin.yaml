@@ -139,6 +139,10 @@ kind: Service
 metadata:
   name: jellyfin
   namespace: jellyfin
+  annotations:
+    # Expose to tailscale
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "media"
   labels:
     app.kubernetes.io/name: jellyfin
     app.kubernetes.io/component: server
@@ -146,7 +150,7 @@ metadata:
 spec:
   ports:
     - name: jellyfin
-      port: 8096
+      port: 80
       targetPort: jellyfin
     - name: file-browser
       port: 8000
@@ -154,52 +158,4 @@ spec:
   selector:
     app.kubernetes.io/name: jellyfin
     app.kubernetes.io/component: server
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: jellyfin
-  namespace: jellyfin
-  labels:
-    app.kubernetes.io/name: jellyfin
-    app.kubernetes.io/component: server
-spec:
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - media
-  rules:
-    - http:
-        paths:
-          - pathType: Prefix
-            path: "/"
-            backend:
-              service:
-                name: jellyfin
-                port:
-                  name: jellyfin
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: file-browser
-  namespace: jellyfin
-  labels:
-    app.kubernetes.io/name: jellyfin
-    app.kubernetes.io/component: file-browser
-spec:
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - manage-media
-  rules:
-    - http:
-        paths:
-          - pathType: Prefix
-            path: "/"
-            backend:
-              service:
-                name: jellyfin
-                port:
-                  name: file-browser
 ---
