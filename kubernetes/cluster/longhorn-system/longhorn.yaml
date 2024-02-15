@@ -36,6 +36,10 @@ spec:
       defaultDataLocality: best-effort
       replicaSoftAntiAffinity: "true"
       replicaAutoBalance: "best-effort"
+    persistence:
+      defaultClassReplicaCount: 2
+      reclaimPolicy: Retain
+      defaultDataLocality: best-effort
   install:
     crds: Create
   interval: 1h0m0s
