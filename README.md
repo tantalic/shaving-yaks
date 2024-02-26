@@ -19,23 +19,23 @@ The Turing Pi board is installed in the [Thermaltake Tower 100][tower-100]
 
 The cluster consists of the following compute modules:
 
-| Node | Device                              | Processor          | Speed  | Cores | RAM | Storage   |
-| ---- | ----------------------------------- | ------------------ | ------ | ----- | --- | --------- |
-| 1    | [Raspberry Pi CM4104032][cm4104032] | ARM v8, Cortex-A72 | 1.5GHz | 4     | 4GB | 32GB eMMC |
-| 2    | [Raspberry Pi CM4008032][cm4008032] | ARM v8, Cortex-A72 | 1.5GHz | 4     | 8GB | 32GB eMMC |
-| 3    | [Raspberry Pi CM4008032][cm4008032] | ARM v8, Cortex-A72 | 1.5GHz | 4     | 8GB | 32GB eMMC |
-| 4    | [Raspberry Pi CM4104032][cm4104032] | ARM v8, Cortex-A72 | 1.5GHz | 4     | 4GB | 32GB eMMC |
+| Node | Device                              | Processor                           | Speed   | Cores | RAM  | Storage   |
+| ---- | ----------------------------------- | ----------------------------------- | ------- | ----- | ---- | --------- |
+| 1    | [Turing Pi RK1][turing-rk1]         | ARM v8 (4×Cortex-A76, 4×Cortex-A55) | 2.4 GHz | 8     | 16GB | 32GB eMMC |
+| 2    | [Raspberry Pi CM4008032][cm4008032] | ARM v8 (Cortex-A72)                 | 1.5GHz  | 4     | 8GB  | 32GB eMMC |
+| 1    | [Turing Pi RK1][turing-rk1]         | ARM v8 (4×Cortex-A76, 4×Cortex-A55) | 2.4 GHz | 8     | 16GB | 32GB eMMC |
+| 4    | [Raspberry Pi CM4008032][cm4008032] | ARM v8 (Cortex-A72)                 | 1.5GHz  | 4     | 8GB  | 32GB eMMC |
 
 ## Operating System
 
 The OS for each compute module is setup as follows:
 
-| Node | Operating System                      | Hostname  | IP Address  |
-| ---- | ------------------------------------- | --------- | ----------- |
-| 1    | [Ubuntu 22.04 (LTS)][jammy-jellyfish] | `yak-001` | 192.168.5.1 |
-| 2    | [Ubuntu 22.04 (LTS)][jammy-jellyfish] | `yak-002` | 192.168.5.2 |
-| 3    | [Ubuntu 22.04 (LTS)][jammy-jellyfish] | `yak-003` | 192.168.5.3 |
-| 4    | [Ubuntu 22.04 (LTS)][jammy-jellyfish] | `yak-004` | 192.168.5.4 |
+| Node | Operating System                                  | Hostname     | IP Address   |
+| ---- | ------------------------------------------------- | ------------ | ------------ |
+| 1    | [Turing RK1 Ubuntu 22.04 (LTS)][turing-rk-ubuntu] | `yak-001`    | 192.168.5.1  |
+| 2    | [Official Ubuntu 22.04 (LTS)][jammy-jellyfish]    | `yak-002`    | 192.168.5.2  |
+| 3    | [Turing RK1 Ubuntu 22.04 (LTS)][turing-rk-ubuntu] | `yak-003`    | 192.168.5.3  |
+| 4    | [Official Ubuntu 22.04 (LTS)][jammy-jellyfish]    | `barber-001` | 192.168.5.51 |
 
 Configuration was completed using the files found in the `os-configuration/`
 directory in this repository, using the following steps:
@@ -43,31 +43,71 @@ directory in this repository, using the following steps:
 1. Flash the Ubuntu 22.04 Raspberry Pi image from Canonical onto the modules
    eMMC, via the [Turing Pi 2 BMC][turing-pi-bmc]. Once the flash is complete,
    power the device on bia the BMC web interface.
+
 2. Once the module has powered on, SSH into the fresh OS install with the
-   default user account and password (`ubuntu:ubuntu`). When prompted, change
-   the password to a unique, secure value.
-3. Copy SSH key(s) to allow for key-based authentication to the node by running
-   `ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@xxx.xxx.xxx.xxx` from the
-   external machines that should be able to connect to the nodes.
-4. Configure the hostname by replacing/editing `/etc/hostname`
-5. Configure the device to use a static IP address:
-   - Delete the existing netplan: `/etc/netplan/50-cloud-init.yaml`
-   - Add `/etc/cloud/cloud.cfg.d/01-disable-network-config.cfg`
-   - Add `/etc/netplan/05-static-ip.yaml`
-6. Reboot the node `sudo reboot` and verify hostname and network configuration
-   is working
+   default user account and password (`ubuntu:ubuntu`):
+
+   `ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@xxx.xxx.xxx.xxx`
+
+   When prompted, change the password to a unique, secure value.
+
+3. Set the hostname by editing `/etc/hostname`
+
+4. Assign the node a reserved DHCP address (from table above) in the network.
+
+5. Copy SSH key(s) to allow for key-based authentication to the node by running
+   `ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@xxx.xxx.xxx.xxx`
+   from the external machines that should be able to connect to the nodes.
+
+6. Install any available updates via `apt`:
+
+   `sudo apt update && sudo apt upgrade`
+
+7. Format and mount the 
+
+   ```shell
+   # List block devices, verify the desired disk is sda before continuing 
+   lsblk -f
+
+   # Format the disk
+   sudo mkfs -t ext4 /dev/sda
+
+   # Verify format worked
+   lsblk -f
+
+   # Create the mount point
+   sudo mkdir -p /mnt/longhorn-001
+
+   # Get the disk UUID
+   lsblk -f | grep sda
+
+   # Edit the fstab, adding a line like this (with UUID replaced):
+   # UUID=069e5955-1892-43f6-99c4-d8075887eb74   /mnt/longhorn-001   ext4   defaults   0   3
+   sudo vi /etc/fstab
+
+   # Mount the disk, verify that it worked
+   sudo mount -a
+   lsblk -f
+   ```
+
+5. Reboot the node. After booting verify hostname, network configuration and
+   drive(s) are all working as expected.
+
+   ```shell
+   sudo reboot
+   ```
 
 ## Kubernetes
 
 The Kubernetes cluster is configured to have one node as the controller and the
 remaining nodes as workers.
 
-| Node | Hostname  | Cluster Role |
-| ---- | --------- | ------------ |
-| 1    | `yak-001` | controller   |
-| 2    | `yak-002` | worker       |
-| 3    | `yak-003` | worker       |
-| 4    | `yak-004` | worker       |
+| Node | Hostname     | Cluster Role |
+| ---- | ------------ | ------------ |
+| 1    | `yak-001`    | worker       |
+| 2    | `yak-002`    | worker       |
+| 3    | `yak-003`    | worker       |
+| 4    | `barber-001` | controller   |
 
 ### Kubernetes Installation
 
@@ -287,7 +327,9 @@ Note: The original Secret, HelmRepository, HelmRelease were created manually.
 [tower-100]: https://thermaltakeusa.com/products/the-tower-100-snow-mini-chassis-ca-1r3-00s6wn-00
 [cm4104032]: https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4104032
 [cm4008032]: https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4008032
+[turing-rk1]: https://docs.turingpi.com/docs/turing-rk1-specs-and-io-ports
 [jammy-jellyfish]: https://www.releases.ubuntu.com/22.04/
+[turing-rk-ubuntu]: https://firmware.turingpi.com/turing-rk1/ubuntu_22.04_rockchip_linux/
 [turing-pi-bmc]: https://docs.turingpi.com/docs/turing-pi2-bmc-intro-specs
 [k0s]: https://k0sproject.io
 [k0sctl]: https://github.com/k0sproject/k0sctl

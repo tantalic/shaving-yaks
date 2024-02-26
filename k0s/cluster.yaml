@@ -1,15 +1,21 @@
 apiVersion: k0sctl.k0sproject.io/v1beta1
 kind: Cluster
 metadata:
-  name: yak-cluster
+  name: shaving-yaks
 spec:
   hosts:
+  - ssh:
+      address: 192.168.5.51
+      user: ubuntu
+      port: 22
+      keyPath: ~/.ssh/id_ed25519
+    role: controller
   - ssh:
       address: 192.168.5.1
       user: ubuntu
       port: 22
       keyPath: ~/.ssh/id_ed25519
-    role: controller
+    role: worker
   - ssh:
       address: 192.168.5.2
       user: ubuntu
@@ -18,12 +24,6 @@ spec:
     role: worker
   - ssh:
       address: 192.168.5.3
-      user: ubuntu
-      port: 22
-      keyPath: ~/.ssh/id_ed25519
-    role: worker
-  - ssh:
-      address: 192.168.5.4
       user: ubuntu
       port: 22
       keyPath: ~/.ssh/id_ed25519
