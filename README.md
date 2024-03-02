@@ -23,7 +23,7 @@ The cluster consists of the following compute modules:
 | ---- | ----------------------------------- | ----------------------------------- | ------- | ----- | ---- | --------- |
 | 1    | [Turing Pi RK1][turing-rk1]         | ARM v8 (4×Cortex-A76, 4×Cortex-A55) | 2.4 GHz | 8     | 16GB | 32GB eMMC |
 | 2    | [Raspberry Pi CM4008032][cm4008032] | ARM v8 (Cortex-A72)                 | 1.5GHz  | 4     | 8GB  | 32GB eMMC |
-| 1    | [Turing Pi RK1][turing-rk1]         | ARM v8 (4×Cortex-A76, 4×Cortex-A55) | 2.4 GHz | 8     | 16GB | 32GB eMMC |
+| 3    | [Turing Pi RK1][turing-rk1]         | ARM v8 (4×Cortex-A76, 4×Cortex-A55) | 2.4 GHz | 8     | 16GB | 32GB eMMC |
 | 4    | [Raspberry Pi CM4008032][cm4008032] | ARM v8 (Cortex-A72)                 | 1.5GHz  | 4     | 8GB  | 32GB eMMC |
 
 ## Operating System
