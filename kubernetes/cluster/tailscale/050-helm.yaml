@@ -1,0 +1,34 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: tailscale
+  namespace: tailscale
+spec:
+  interval: 1m0s
+  url: https://pkgs.tailscale.com/helmcharts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: tailscale-operator
+  namespace: tailscale
+spec:
+  chart:
+    spec:
+      chart: tailscale-operator
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: tailscale
+      version: "1.56.1"
+  values:
+    apiServerProxyConfig:
+      mode: "true"
+  install:
+    crds: Create
+  interval: 1h0m0s
+  releaseName: tailscale-operator
+  targetNamespace: tailscale
+  upgrade:
+    crds: CreateReplace
