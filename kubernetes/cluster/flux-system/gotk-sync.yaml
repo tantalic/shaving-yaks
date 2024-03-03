@@ -11,7 +11,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: https://github.com/tantalic/shaving-yaks.git
+  url: ssh://git@github.com/tantalic/shaving-yaks
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
