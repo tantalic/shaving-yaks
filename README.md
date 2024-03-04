@@ -246,7 +246,7 @@ flux create helmrelease sealed-secrets \
     --target-namespace=sealed-secrets \
     --source=HelmRepository/sealed-secrets \
     --chart=sealed-secrets \
-    --chart-version="2.14.1" \
+    --chart-version="2.15.0" \
     --crds=CreateReplace \
     --export
 ```
