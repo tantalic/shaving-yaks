@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gatus-config-2024-01-16b
+  name: gatus-config-2024-03-03
   namespace: monitoring
   labels:
     app.kubernetes.io/name: status
@@ -59,13 +59,6 @@ data:
         interval: 30s
         conditions:
           - "[CONNECTED] == true"
-        alerts:
-          - type: pushover
-      - name: ntfy
-        group: Monitoring
-        url: "http://ntfy.ntfy.svc.cluster.local:80"
-        conditions:
-          - "[STATUS] == 200"
         alerts:
           - type: pushover
       - name: Grafana
@@ -149,7 +142,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: gatus-config-2024-01-16b
+            name: gatus-config-2024-03-03
       containers:
         - name: gatus
           image: twinproduction/gatus:v5.7.0
