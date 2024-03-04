@@ -1,0 +1,3 @@
+*.secret.yaml
+sealed-secrets-pub.pem
+shaving-yaks.kubeconfig
