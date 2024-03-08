@@ -73,13 +73,13 @@ metadata:
   annotations:
     # Expose to tailscale - Using an Ingress resource was not compatible,
     # likely due to the use of the host network mode. This makes the service
-    # available at http://homeassistant:8123/
+    # available at http://homeassistant/
     tailscale.com/expose: "true"
     tailscale.com/hostname: "homeassistant"
 spec:
   ports:
     - name: http
-      port: 8123
+      port: 80
       targetPort: http
   selector:
     app.kubernetes.io/name: homeassistant-core
