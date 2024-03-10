@@ -132,7 +132,7 @@ spec:
         storageClassName: longhorn
         resources:
           requests:
-            storage: 2Gi
+            storage: 1Ti
 ---
 apiVersion: v1
 kind: Service
