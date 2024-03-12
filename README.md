@@ -4,20 +4,60 @@
 
 ## Hardware
 
+```
+                                                     ┌──────────────────┐
+                                                     │ Network/Internet │
+                                                     │    Connection    │
+                                                     └─────────┬────────┘
+
+╔═Turing Pi 2.5 Cluster Board ═════════════════════════════════│══════════════╗
+║                                                                             ║
+║        ┌─────────────────────────────────────────────────────┴────┐         ║
+║        │                 Internal Switch (1 Gbps)                 │         ║
+║        └──────────────────────────────────────────────────────────┘         ║
+║                                      │                                      ║
+║          ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─┌ ─ ─ ─ ─└ ─ ─ ─ ─ ┐─ ─ ─ ─ ─ ─ ─ ─ ┐           ║
+║                                                                             ║
+║          │                  │                  │                │           ║
+║ ┏━━━━ Node 1 ━━━━┓ ┏━━━━ Node 2 ━━━━┓ ┏━━━━ Node 3 ━━━━┓ ┏━━━━ Node 4 ━━━━┓ ║
+║ ┃                ┃ ┃                ┃ ┃                ┃ ┃                ┃ ║
+║ ┃    yak-001     ┃ ┃    yak-002     ┃ ┃    yak-003     ┃ ┃   barber-001   ┃ ║
+║ ┃                ┃ ┃                ┃ ┃                ┃ ┃                ┃ ║
+║ ┃   Turing RK1   ┃ ┃  Raspberry Pi  ┃ ┃   Turing RK1   ┃ ┃  Raspberry Pi  ┃ ║
+║ ┃ Compute Module ┃ ┃Compute Module 4┃ ┃ Compute Module ┃ ┃Compute Module 4┃ ║
+║ ┃                ┃ ┃                ┃ ┃                ┃ ┃                ┃ ║
+║ ┃    16GB RAM    ┃ ┃    8GB RAM     ┃ ┃    16GB RAM    ┃ ┃    8GB RAM     ┃ ║
+║ ┃                ┃ ┃                ┃ ┃                ┃ ┃                ┃ ║
+║ ┃    8 Cores     ┃ ┃    4 Cores     ┃ ┃    8 Cores     ┃ ┃    4 Cores     ┃ ║
+║ ┃                ┃ ┃                ┃ ┃                ┃ ┃                ┃ ║
+║ ┗━━━━━━━━━━━━━━━━┛ ┗━━━━━━━━━━━━━━━━┛ ┗━━━━━━━━━━━━━━━━┛ ┗━━━━━━━━━━━━━━━━┛ ║
+║          │                  │                  │                            ║
+║                                                                             ║
+║          │                  │                  │                            ║
+║ ┌────────────────┐ ┌────────────────┐                                       ║
+║ │   Mini PCIe    │ │   Mini PCIe    │          │                            ║
+║ │    to SATA     │ │    to SATA     │                                       ║
+║ │    Adapter     │ │    Adapter     │          │                            ║
+║ └────────────────┘ └────────────────┘                                       ║
+║          │                  │                  │                            ║
+║                                                                             ║
+║          │                  │                  │                            ║
+║ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐                    ║
+║ │    2TB 2.5"    │ │    2TB 2.5"    │ │    2TB 2.5"    │                    ║
+║ │    SATA SSD    │ │    SATA SSD    │ │    SATA SSD    │                    ║
+║ └────────────────┘ └────────────────┘ └────────────────┘                    ║
+╚═════════════════════════════════════════════════════════════════════════════╝
+```
+
 ### Cluster Board
 
 The cluster is built on the [Turing Pi 2][turing-pi], a mini ITX board with a
-built-in Ethernet switch. The Turing Pi 2 can host up to four computing modules
-including Raspberry Pi CM4 and Nvidia Jetson.
-
-### Case
-
-The Turing Pi board is installed in the [Thermaltake Tower 100][tower-100]
-(Snow) chassis.
+built-in 1 Gbps Ethernet switch. The Turing Pi 2 can host up to four compute
+modules including Raspberry Pi CM4, Nvidia Jetson and the Turing RK1.
 
 ### Compute Modules
 
-The cluster consists of the following compute modules:
+The cluster is using the following compute modules:
 
 | Node | Device                              | Processor                           | Speed   | Cores | RAM  | Storage   |
 | ---- | ----------------------------------- | ----------------------------------- | ------- | ----- | ---- | --------- |
@@ -25,6 +65,21 @@ The cluster consists of the following compute modules:
 | 2    | [Raspberry Pi CM4008032][cm4008032] | ARM v8 (Cortex-A72)                 | 1.5GHz  | 4     | 8GB  | 32GB eMMC |
 | 3    | [Turing Pi RK1][turing-rk1]         | ARM v8 (4×Cortex-A76, 4×Cortex-A55) | 2.4 GHz | 8     | 16GB | 32GB eMMC |
 | 4    | [Raspberry Pi CM4008032][cm4008032] | ARM v8 (Cortex-A72)                 | 1.5GHz  | 4     | 8GB  | 32GB eMMC |
+
+### Additional Storage
+
+Each of the three worker nodes is attached with addition storage:
+
+| Node | Connection                                   | Drive                  |
+| ---- | -------------------------------------------- | ---------------------- |
+| 1    | [Mini PCIe to SATA 3.0 Card][mpcie-sata]     | 2TB, 2.5" SATA 3.0 SSD |
+| 2    | [Mini PCIe to SATA 3.0 Card][mpcie-sata]     | 2TB, 2.5" SATA 3.0 SSD |
+| 3    | [Turing Pi Onboard SATA 3.0][turing-pi-sata] | 2TB, 2.5" SATA 3.0 SSD |
+
+### Case
+
+The Turing Pi board is installed in the [Thermaltake Tower 100][tower-100]
+(Snow) chassis.
 
 ## Operating System
 
@@ -328,6 +383,8 @@ Note: The original Secret, HelmRepository, HelmRelease were created manually.
 [cm4104032]: https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4104032
 [cm4008032]: https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4008032
 [turing-rk1]: https://docs.turingpi.com/docs/turing-rk1-specs-and-io-ports
+[mpcie-sata]: https://www.newegg.com/p/0ZF-0183-00035?Item=9SIARZXJUR4986
+[turing-pi-sata]: https://docs.turingpi.com/docs/turing-pi2-specs-and-io-ports#interconnections
 [jammy-jellyfish]: https://www.releases.ubuntu.com/22.04/
 [turing-rk-ubuntu]: https://firmware.turingpi.com/turing-rk1/ubuntu_22.04_rockchip_linux/
 [turing-pi-bmc]: https://docs.turingpi.com/docs/turing-pi2-bmc-intro-specs
