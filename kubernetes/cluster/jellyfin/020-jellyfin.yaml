@@ -13,6 +13,32 @@ data:
   username: YWRtaW5pc3RyYXRvcg==
   password: JDJhJDEyJHJZbHE3WC4wd012Y1gyWFhXV2NzWS5TWTROQXJMNTdUZUIwNTA3S1o4RXhlaE1GWkdyV1ou # bcrypt hash
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smb-config-v0
+  namespace: jellyfin
+  labels:
+    app.kubernetes.io/name: smb-share
+    app.kubernetes.io/part-of: jellyfin
+data:
+  config.yml: |
+    auth:
+      - user: foo
+        group: foo
+        uid: 1000
+        gid: 1000
+        password: bar
+    share:
+      - name: media
+        comment: Media
+        path: /media
+        browsable: yes
+        readonly: no
+        guestok: no
+        veto: no
+        recycle: no
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -38,6 +64,10 @@ spec:
         app.kubernetes.io/part-of: jellyfin
         app.kubernetes.io/version: "10.8.13"
     spec:
+      volumes:
+        - name: smb-config
+          configMap:
+            name: smb-config-v0
       containers:
         - name: jellyfin
           image: jellyfin/jellyfin:10.8.13-1
@@ -80,9 +110,37 @@ spec:
             - name: file-browser
               containerPort: 8000
               protocol: TCP
+        - name: samba
+          image: crazymax/samba:4.18.9
+          env:
+            - name: SAMBA_LOG_LEVEL
+              value: "0"
+            - name: TZ
+              value: America/Los_Angeles
+          ports:
+            - name: mscs-tcp
+              containerPort: 445
+              protocol: TCP
+            - name: mscs-udp
+              containerPort: 445
+              protocol: UDP
+            - name: ws-disc-tcp
+              containerPort: 3702
+              protocol: TCP
+            - name: ws-disc-udp
+              containerPort: 3702
+              protocol: UDP
+            - name: llmnr-tcp
+              containerPort: 5355
+              protocol: TCP
+            - name: llmnr-udp
+              containerPort: 5355
+              protocol: UDP
           volumeMounts:
             - name: media
               mountPath: /media/
+            - name: smb-config
+              mountPath: /data/
           resources:
             requests:
               cpu: 100m
@@ -151,10 +209,37 @@ spec:
   ports:
     - name: jellyfin
       port: 80
+      protocol: TCP
       targetPort: jellyfin
     - name: file-browser
+      protocol: TCP
       port: 8000
       targetPort: file-browser
+    - name: mscs-tcp
+      port: 445
+      protocol: TCP
+      targetPort: mscs-tcp
+    - name: mscs-udp
+      port: 445
+      protocol: UDP
+      targetPort: mscs-udp
+    - name: ws-disc-tcp
+      port: 3702
+      protocol: TCP
+      targetPort: ws-disc-tcp
+    - name: ws-disc-udp
+      port: 3702
+      protocol: UDP
+      targetPort: ws-disc-udp
+    - name: llmnr-tcp
+      port: 5355
+      protocol: TCP
+      targetPort: llmnr-tcp
+    - name: llmnr-udp
+      port: 5355
+      protocol: UDP
+      targetPort: llmnr-udp
+
   selector:
     app.kubernetes.io/name: jellyfin
     app.kubernetes.io/component: server
