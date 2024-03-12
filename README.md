@@ -2,6 +2,8 @@
 
 🧪 An over-engineered home lab. For fun and... 🏡
 
+![Shaving Yaks Cluster](./hardware.webp)
+
 ## Hardware
 
 ```
