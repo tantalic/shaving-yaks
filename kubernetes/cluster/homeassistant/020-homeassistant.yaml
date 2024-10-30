@@ -35,6 +35,16 @@ spec:
                 git clone --depth=1 --branch=v0.40.3 https://github.com/ollo69/ha-smartthinq-sensors.git /tmp/ha-smartthinq-sensors-repo &&
                 cp -R /tmp/ha-smartthinq-sensors-repo/custom_components/smartthinq_sensors/ /config/custom_components &&
                 rm -rf /tmp/ha-smartthinq-sensors-repo
+        - name: fetch-presence-simulation-integration
+          image: alpine/git:v2.45.2
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+                git clone --depth=1 --branch=v0.40.3 https://github.com/slashback100/presence_simulation.git /tmp/presence_simulation-repo &&
+                rm -rf /config/custom_components/presence_simulation &&
+                cp -R /tmp/presence_simulation-repo/custom_components/presence_simulation/ /config/custom_components &&
+                rm -rf /tmp/presence_simulation-repo
           volumeMounts:
             - name: config
               mountPath: /config/              
