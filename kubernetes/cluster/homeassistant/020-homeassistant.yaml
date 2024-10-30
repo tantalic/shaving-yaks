@@ -45,7 +45,7 @@ spec:
           args:
             - -c
             - >-
-                git clone --depth=1 --branch=v0.40.3 https://github.com/slashback100/presence_simulation.git /tmp/presence_simulation-repo &&
+                git clone --depth=1 --branch=v4.10 https://github.com/slashback100/presence_simulation.git /tmp/presence_simulation-repo &&
                 rm -rf /config/custom_components/presence_simulation &&
                 cp -R /tmp/presence_simulation-repo/custom_components/presence_simulation/ /config/custom_components &&
                 rm -rf /tmp/presence_simulation-repo
