@@ -25,6 +25,19 @@ spec:
         app.kubernetes.io/version: "2024.10.4"
     spec:
       hostNetwork: true
+      initContainers: 
+        - name: fetch-thinq-integration
+          image: alpine/git:v2.45.2
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+                git clone --depth=1 --branch=v0.40.3 https://github.com/ollo69/ha-smartthinq-sensors.git /tmp/ha-smartthinq-sensors-repo &&
+                cp -R /tmp/ha-smartthinq-sensors-repo/custom_components/smartthinq_sensors/ /config/custom_components &&
+                rm -rf /tmp/ha-smartthinq-sensors-repo
+          volumeMounts:
+            - name: config
+              mountPath: /config/              
       containers:
         - name: homeassistant-core
           image: ghcr.io/home-assistant/home-assistant:2024.10.4
