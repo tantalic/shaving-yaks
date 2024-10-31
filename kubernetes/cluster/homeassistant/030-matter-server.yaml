@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: matter-server
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: matter-server
+    app.kubernetes.io/component: matter-server
+    app.kubernetes.io/part-of: homeassistant
+    app.kubernetes.io/version: "6.6"
+spec:
+  serviceName: matter-server
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: matter-server
+      app.kubernetes.io/component: matter-server
+      app.kubernetes.io/part-of: homeassistant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: matter-server
+        app.kubernetes.io/component: matter-server
+        app.kubernetes.io/part-of: homeassistant
+        app.kubernetes.io/version: "6.6"
+    spec:
+      hostNetwork: true
+      containers:
+        - name: python-matter-server
+          image: ghcr.io/home-assistant-libs/python-matter-server:6.6
+          env:
+            - name: TZ
+              value: "America/Los_Angeles"
+          ports:
+            - name: ws
+              containerPort: 5580
+              protocol: TCP
+          volumeMounts:
+            - name: python-matter-server-data
+              mountPath: /data/
+          resources:
+            requests:
+              cpu: 100m
+              memory: 48Mi
+            limits:
+              cpu: 1000m
+              memory: 1.5Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: python-matter-server-data
+        namespace: homeassistant
+        labels:
+          app.kubernetes.io/name: matter-server
+          app.kubernetes.io/component: matter-server
+          app.kubernetes.io/part-of: homeassistant
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 500Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matter-server
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: matter-server
+    app.kubernetes.io/component: matter-server
+    app.kubernetes.io/part-of: homeassistant
+spec:
+  ports:
+    - name: ws
+      port: 5580
+      targetPort: ws
+  selector:
+    app.kubernetes.io/name: matter-server
+    app.kubernetes.io/component: matter-server
+    app.kubernetes.io/part-of: homeassistant
+---
