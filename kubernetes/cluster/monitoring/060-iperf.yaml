@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf3
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: iperf3
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: iperf3
+    spec:
+      containers:
+        - name: iperf
+          image: networkstatic/iperf3:latest
+          args: ["-s"]
+          ports:
+            - name: upd
+              protocol: UDP
+              containerPort: 5201
+            - name: tcp
+              protocol: TCP
+              containerPort: 5201
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iperf3
+  namespace: monitoring
+  annotations:
+    # Expose to tailscale
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "iperf3"
+spec:
+  ports:
+    - name: upd
+      protocol: UDP
+      port: 5201
+      targetPort: 5201
+    - name: tcp
+      protocol: TCP
+      port: 5201
+      targetPort: 5201
+  selector:
+    app: iperf3
+---
