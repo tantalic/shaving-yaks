@@ -45,6 +45,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config/
+            - name: config-v2
+              mountPath: /config-v2/
           resources:
             requests:
               cpu: 100m
@@ -55,6 +57,20 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: config
+        namespace: homeassistant
+        labels:
+          app.kubernetes.io/name: homeassistant-core
+          app.kubernetes.io/component: core
+          app.kubernetes.io/part-of: homeassistant
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 200Mi
+    - metadata:
+        name: config-v2
         namespace: homeassistant
         labels:
           app.kubernetes.io/name: homeassistant-core
