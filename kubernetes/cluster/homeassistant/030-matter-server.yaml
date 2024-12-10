@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: matter-server
     app.kubernetes.io/component: matter-server
     app.kubernetes.io/part-of: homeassistant
-    app.kubernetes.io/version: "6.6"
+    app.kubernetes.io/version: "6.6.1"
 spec:
   serviceName: matter-server
   replicas: 1
@@ -22,12 +22,12 @@ spec:
         app.kubernetes.io/name: matter-server
         app.kubernetes.io/component: matter-server
         app.kubernetes.io/part-of: homeassistant
-        app.kubernetes.io/version: "6.6"
+        app.kubernetes.io/version: "6.6.1"
     spec:
       hostNetwork: true
       containers:
         - name: python-matter-server
-          image: ghcr.io/home-assistant-libs/python-matter-server:6.6
+          image: ghcr.io/home-assistant-libs/python-matter-server:6.6.1
           env:
             - name: TZ
               value: "America/Los_Angeles"
