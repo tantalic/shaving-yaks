@@ -25,13 +25,13 @@ spec:
         app.kubernetes.io/version: "2024.12.1"
     spec:
       hostNetwork: true
-      initContainers: 
-        - name: install-hacs
-          image: bash:5.2-alpine3.20
-          command: ["/bin/sh", "-c", "wget -O - https://get.hacs.xyz | bash -"]
-          volumeMounts:
-            - name: config
-              mountPath: /config/              
+      # initContainers: 
+      #   - name: install-hacs
+      #     image: bash:5.2-alpine3.20
+      #     command: ["/bin/sh", "-c", "wget -O - https://get.hacs.xyz | bash -"]
+      #     volumeMounts:
+      #       - name: config
+      #         mountPath: /config/              
       containers:
         - name: homeassistant-core
           image: ghcr.io/home-assistant/home-assistant:2024.12.1
