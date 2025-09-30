@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: homeassistant-core
     app.kubernetes.io/component: core
     app.kubernetes.io/part-of: homeassistant
-    app.kubernetes.io/version: "2025.1.2"
+    app.kubernetes.io/version: "2025.9.4"
 spec:
   serviceName: homeassistant
   replicas: 1
@@ -22,7 +22,7 @@ spec:
         app.kubernetes.io/name: homeassistant-core
         app.kubernetes.io/component: core
         app.kubernetes.io/part-of: homeassistant
-        app.kubernetes.io/version: "2025.1.2"
+        app.kubernetes.io/version: "2025.9.4"
     spec:
       hostNetwork: true
       initContainers: 
@@ -34,7 +34,7 @@ spec:
               mountPath: /config/              
       containers:
         - name: homeassistant-core
-          image: ghcr.io/home-assistant/home-assistant:2025.1.2
+          image: ghcr.io/home-assistant/home-assistant:2025.9.4
           env:
             - name: TZ
               value: "America/Los_Angeles"
