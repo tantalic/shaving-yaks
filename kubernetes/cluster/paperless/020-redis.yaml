@@ -41,7 +41,7 @@ metadata:
     app.kubernetes.io/name: redis
     app.kubernetes.io/component: broker
     app.kubernetes.io/part-of: paperless
-    app.kubernetes.io/version: "7.2.3"
+    app.kubernetes.io/version: "8.2.3"
 spec:
   replicas: 1
   selector:
@@ -54,11 +54,11 @@ spec:
         app.kubernetes.io/name: redis
         app.kubernetes.io/component: broker
         app.kubernetes.io/part-of: paperless
-        app.kubernetes.io/version: "7.2.3"
+        app.kubernetes.io/version: "8.2.3"
     spec:
       containers:
         - name: redis
-          image: redis:7.2.3-alpine
+          image: redis:8.2.3-alpine
           args: 
             - /usr/local/etc/redis/redis.conf
           ports:

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: tika
     app.kubernetes.io/component: data-extraction
     app.kubernetes.io/part-of: paperless
-    app.kubernetes.io/version: "2.9.0"
+    app.kubernetes.io/version: "3.2.3.0"
 spec:
   replicas: 1
   selector:
@@ -21,11 +21,11 @@ spec:
         app.kubernetes.io/name: tika
         app.kubernetes.io/component: data-extraction
         app.kubernetes.io/part-of: paperless
-        app.kubernetes.io/version: "2.9.0"
+        app.kubernetes.io/version: "3.2.3.0"
     spec:
       containers:
         - name: tika
-          image: ghcr.io/paperless-ngx/tika:2.9.0-minimal
+          image: apache/tika:3.2.3.0
           ports:
             - containerPort: 9998
               name: tcp
