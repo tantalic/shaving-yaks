@@ -69,26 +69,26 @@ spec:
           configMap:
             name: smb-config-v0
       containers:
-        - name: jellyfin
-          image: jellyfin/jellyfin:10.11.2
-          ports:
-            - name: jellyfin
-              containerPort: 8096
-              protocol: TCP
-          volumeMounts:
-            - name: config
-              mountPath: /config/
-            - name: cache
-              mountPath: /cache/
-            - name: media
-              mountPath: /media/
-          resources:
-            requests:
-              cpu: 100m
-              memory: 48Mi
-            limits:
-              cpu: 1000m
-              memory: 1.5Gi
+        # - name: jellyfin
+          # image: jellyfin/jellyfin:10.11.2
+          # ports:
+          #   - name: jellyfin
+          #     containerPort: 8096
+          #     protocol: TCP
+          # volumeMounts:
+          #   - name: config
+          #     mountPath: /config/
+          #   - name: cache
+          #     mountPath: /cache/
+          #   - name: media
+          #     mountPath: /media/
+          # resources:
+          #   requests:
+          #     cpu: 100m
+          #     memory: 48Mi
+          #   limits:
+          #     cpu: 1000m
+          #     memory: 1.5Gi
         - name: filebrowser
           image: filebrowser/filebrowser:v2.27.0
           env:
