@@ -90,7 +90,7 @@ spec:
           #     cpu: 1000m
           #     memory: 1.5Gi
         - name: filebrowser
-          image: filebrowser/filebrowser:v2.27.0
+          image: filebrowser/filebrowser:v2.50.0
           env:
             - name: FB_PORT
               value: "8000"
@@ -106,6 +106,9 @@ spec:
                 secretKeyRef:
                   name: manage-media
                   key: password
+          volumeMounts:
+            - name: media
+              mountPath: /media/
           ports:
             - name: file-browser
               containerPort: 8000
