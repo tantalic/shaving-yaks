@@ -84,10 +84,12 @@ metadata:
     tailscale.com/expose: "true"
     tailscale.com/hostname: "homeassistant"
 spec:
+  type: NodePort
   ports:
     - name: http
       port: 80
       targetPort: http
+      nodePort: 30123
   selector:
     app.kubernetes.io/name: homeassistant-core
     app.kubernetes.io/component: core
