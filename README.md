@@ -377,6 +377,52 @@ kubeseal \
 
 Note: The original Secret, HelmRepository, HelmRelease were created manually.
 
+## Cluster Maintenance
+
+### Controller SSL Certificates
+
+The controller SSL certificates will expire each year if not updated. To resolve
+this manually:
+
+1. SSH into the controller node 
+
+   ```shell
+   ```
+
+2. Check the logs to verify the errors and the expiration date of the current
+   certificate: 
+
+    ```shell
+    sudo journalctl -u k0scontroller --no-pager -n 10
+    ```
+
+    ```shell
+    echo | openssl s_client -connect 127.0.0.1:6443 -servername localhost 2>/dev/null   | openssl x509 -noout -subject -issuer -dates
+    ```
+
+3. Backup the `pki` directory contents
+
+   ```shell
+   sudo tar -C /var/lib/k0s -czf ~/k0s-pki-backup.tgz pki
+   ```
+
+4. Stop the k0s controller:
+
+   ```shell
+   sudo systemctl stop k0scontroller
+   ```
+
+5. Remove the controller certificates:
+
+   ```shell
+   sudo rm /var/lib/k0s/pki/server.*
+   ```
+
+6. Start the k0s controller:
+
+   ```shell
+   sudo systemctl start k0scontroller
+   ```
 
 <!-- References -->
 
