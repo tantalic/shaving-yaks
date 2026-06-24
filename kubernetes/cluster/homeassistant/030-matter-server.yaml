@@ -27,7 +27,7 @@ spec:
       hostNetwork: true
       containers:
         - name: python-matter-server
-          image: ghcr.io/home-assistant-libs/python-matter-server:8.1.2
+          image: ghcr.io/matter-js/python-matter-server:8.1.2
           env:
             - name: TZ
               value: "America/Los_Angeles"
